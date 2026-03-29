@@ -15,7 +15,6 @@ from app.services.ocr_service import OCRService
 from app.services.opening_detector import OpeningDetector
 from app.utils.geometry import (
     line_length,
-    midpoint,
     orthogonalize_segment,
     quantize_point,
 )
@@ -106,21 +105,28 @@ class PlanParser:
 
     def _extract_wall_mask(self, binary: np.ndarray) -> np.ndarray:
         h, w = binary.shape[:2]
-        h_kernel_len = max(18, w // 20)
-        v_kernel_len = max(18, h // 20)
+        h_kernel_len = max(15, w // 40)
+        v_kernel_len = max(15, h // 40)
 
         horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (h_kernel_len, 1))
         vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, v_kernel_len))
 
-        horizontal = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel)
-        vertical = cv2.morphologyEx(binary, cv2.MORPH_OPEN, vertical_kernel)
+        cleaned = cv2.morphologyEx(
+            binary,
+            cv2.MORPH_OPEN,
+            cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)),
+            iterations=1,
+        )
+
+        horizontal = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, horizontal_kernel)
+        vertical = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, vertical_kernel)
 
         wall_mask = cv2.bitwise_or(horizontal, vertical)
         wall_mask = cv2.morphologyEx(
             wall_mask,
             cv2.MORPH_CLOSE,
-            cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7)),
-            iterations=1,
+            cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11)),
+            iterations=2,
         )
         wall_mask = cv2.dilate(
             wall_mask,
@@ -240,13 +246,20 @@ class PlanParser:
         return merged_walls
 
     def _detect_walls(self, binary: np.ndarray) -> list[Wall2D]:
+        try:
+            skeleton = cv2.ximgproc.thinning(
+                binary, thinningType=cv2.ximgproc.THINNING_GUOHALL
+            )
+        except Exception:
+            skeleton = cv2.Canny(binary, 50, 150)
+
         lines = cv2.HoughLinesP(
-            binary,
+            skeleton,
             rho=1,
             theta=np.pi / 180,
-            threshold=self.config.hough_threshold,
-            minLineLength=max(self.config.min_wall_length_px + 15, 45),
-            maxLineGap=24,
+            threshold=max(20, self.config.hough_threshold - 30),
+            minLineLength=max(self.config.min_wall_length_px, 20),
+            maxLineGap=30,
         )
         if lines is None:
             return []
@@ -358,6 +371,9 @@ class PlanParser:
         for wall in vertical:
             split_line(wall, v_splits.get(wall.id, set()), is_horizontal=False)
         segmented.extend(others)
+
+        # Keep only meaningful segments to avoid tiny noisy fragments.
+        segmented = [segment for segment in segmented if segment.length_m >= 0.28]
         return segmented
 
     def _detect_rooms(
