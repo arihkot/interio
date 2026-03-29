@@ -14,6 +14,7 @@ The processing is India-context by default (INR, climate zones, state-level avai
 1. **Floor Plan Parsing**
    - OpenCV preprocessing + Hough walls + contour rooms.
    - Optional local models:
+     - GLM-4V-0.9B OCR (`THUDM/glm-4v-0.9b`) preferred for room text extraction.
      - YOLO (openings) via `OpeningDetector`.
      - PaddleOCR (labels) via `OCRService`.
 
@@ -61,3 +62,4 @@ Use `backend/.env.example` as template:
 - If OCR and YOLO are unavailable, system gracefully falls back to CV heuristics.
 - LLM-guided primary selection can reorder options based on lifecycle evidence.
 - Pricing entries are tagged `observed/proxy/imputed` for transparency.
+- World Bank proxy pricing is derived from India CPI + GDP deflator + industry growth indicators; fallback is local baseline if feed fails.

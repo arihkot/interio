@@ -31,56 +31,46 @@ class PricingService:
             notes.append(wb_note)
         except Exception:
             notes.append(
-                "World Bank commodity feed unavailable; showing locally adjusted baseline prices."
+                "World Bank feed unavailable; showing locally adjusted baseline prices."
             )
         return baseline, notes
 
     def _fetch_world_bank_multiplier(self) -> tuple[float, str]:
-        steel_latest = self._fetch_world_bank_latest("CM.MKT.STL.WLD")
-        steel_prev = self._fetch_world_bank_previous("CM.MKT.STL.WLD")
-        cpi_latest = self._fetch_world_bank_latest("FP.CPI.TOTL")
-        cpi_prev = self._fetch_world_bank_previous("FP.CPI.TOTL")
+        cpi_ratio = self._ratio_from_index(country="IND", indicator="FP.CPI.TOTL")
+        gdp_deflator_ratio = self._ratio_from_percent(
+            country="IND", indicator="NY.GDP.DEFL.KD.ZG"
+        )
+        industry_growth_ratio = self._ratio_from_percent(
+            country="IND", indicator="NV.IND.TOTL.KD.ZG"
+        )
 
-        steel_ratio = 1.0
-        cpi_ratio = 1.0
-        if steel_latest and steel_prev and steel_prev > 0:
-            steel_ratio = steel_latest / steel_prev
-        if cpi_latest and cpi_prev and cpi_prev > 0:
-            cpi_ratio = cpi_latest / cpi_prev
+        weighted: list[tuple[float, float]] = []
+        if cpi_ratio is not None:
+            weighted.append((cpi_ratio, 0.45))
+        if gdp_deflator_ratio is not None:
+            weighted.append((gdp_deflator_ratio, 0.35))
+        if industry_growth_ratio is not None:
+            weighted.append((industry_growth_ratio, 0.20))
 
-        blended_ratio = steel_ratio * 0.65 + cpi_ratio * 0.35
+        if not weighted:
+            raise ValueError("No usable World Bank indicators returned")
+
+        total_weight = sum(weight for _, weight in weighted)
+        blended_ratio = sum(value * weight for value, weight in weighted) / total_weight
         multiplier = max(0.85, min(1.25, blended_ratio))
         return (
             multiplier,
             (
                 f"World Bank proxy applied with multiplier {multiplier:.3f} "
-                "(steel commodity + India CPI blend)."
+                "(India CPI + GDP deflator + industry growth blend)."
             ),
         )
 
-    def _fetch_world_bank_latest(self, indicator: str) -> Optional[float]:
-        series = self._fetch_world_bank_series(
-            "IND" if indicator == "FP.CPI.TOTL" else "WLD", indicator
-        )
+    def _ratio_from_index(self, country: str, indicator: str) -> Optional[float]:
+        series = self._fetch_world_bank_series(country, indicator)
         if not series:
             return None
-        for point in series:
-            value = point.get("value")
-            if value is None:
-                continue
-            try:
-                return float(value)
-            except Exception:
-                continue
-        return None
-
-    def _fetch_world_bank_previous(self, indicator: str) -> Optional[float]:
-        series = self._fetch_world_bank_series(
-            "IND" if indicator == "FP.CPI.TOTL" else "WLD", indicator
-        )
-        if not series:
-            return None
-        found = []
+        found: list[float] = []
         for point in series:
             value = point.get("value")
             if value is None:
@@ -93,7 +83,25 @@ class PricingService:
                 break
         if len(found) < 2:
             return None
-        return found[1]
+        latest, previous = found[0], found[1]
+        if previous == 0:
+            return None
+        return latest / previous
+
+    def _ratio_from_percent(self, country: str, indicator: str) -> Optional[float]:
+        series = self._fetch_world_bank_series(country, indicator)
+        if not series:
+            return None
+        for point in series:
+            value = point.get("value")
+            if value is None:
+                continue
+            try:
+                pct = float(value)
+            except Exception:
+                continue
+            return max(0.75, min(1.35, 1.0 + pct / 100.0))
+        return None
 
     def _fetch_world_bank_series(
         self, country: str, indicator: str
@@ -130,7 +138,7 @@ class PricingService:
                     point.model_copy(
                         update={
                             "unit_cost_inr": round(adjusted_cost, 2),
-                            "source": "world_bank_commodity_proxy",
+                            "source": "world_bank_macro_proxy",
                             "source_type": "proxy",
                             "confidence": max(point.confidence, 0.78),
                             "timestamp": datetime.now(timezone.utc),

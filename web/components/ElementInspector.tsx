@@ -51,6 +51,7 @@ export function ElementInspector({ project, selectedElementId }: Props) {
           {room ? (
             <ul>
               <li>Room name: {room.name}</li>
+              <li>Name source: {room.name_source === "ocr" ? "OCR" : "Heuristic"}</li>
               <li>Area: {room.area_m2.toFixed(2)} m2</li>
               <li>Centroid: ({room.centroid.x.toFixed(2)}, {room.centroid.y.toFixed(2)})</li>
               <li>Detection confidence: {Math.round(room.confidence * 100)}%</li>

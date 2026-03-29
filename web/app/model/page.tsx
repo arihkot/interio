@@ -12,16 +12,8 @@ export default function ModelPage() {
   }
 
   return (
-    <div className="page-wrapper">
-      <header className="page-header" style={{ alignItems: "center" }}>
-        <div>
-          <h1 className="page-title">3D Model Render</h1>
-          <p className="page-subtitle">Interactive 3D visualization of the structure</p>
-        </div>
-        <ModelControls variant={variant} detail={detail} onVariantChange={setVariant} onDetailChange={setDetail} />
-      </header>
-
-      <div className="panel" style={{ height: "calc(100vh - 200px)" }}>
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "var(--bg)" }}>
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         {activeModel ? (
           <Model3DViewer 
             model={activeModel} 
@@ -29,10 +21,20 @@ export default function ModelPage() {
             onSelectElement={setSelectedElementId} 
           />
         ) : (
-          <div className="empty-state">
+          <div className="empty-state" style={{ height: "100%", border: "none" }}>
             <p>Model not available for these settings.</p>
           </div>
         )}
+      </div>
+
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "2.5rem", pointerEvents: "none", zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ pointerEvents: "auto" }}>
+          <h1 className="page-title" style={{ fontSize: "2rem", margin: 0, color: "var(--text)", textShadow: "0 2px 10px rgba(255,255,255,0.8)" }}>3D Model Render</h1>
+          <p className="page-subtitle" style={{ fontSize: "1.05rem", marginTop: "0.25rem" }}>Interactive 3D visualization of the structure</p>
+        </div>
+        <div style={{ pointerEvents: "auto", minWidth: "350px" }}>
+          <ModelControls variant={variant} detail={detail} onVariantChange={setVariant} onDetailChange={setDetail} />
+        </div>
       </div>
     </div>
   );

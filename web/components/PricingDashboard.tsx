@@ -48,7 +48,7 @@ export function PricingDashboard({ projectId }: Props) {
   return (
     <section className="panel pricing-panel">
       <div className="panel-header">
-        <h3>Real-Time / Proxy Material Pricing</h3>
+        <h3>Real-Time Material Pricing via World Bank</h3>
         <p>
           {data.location.city ?? "Selected location"}, {data.location.state ?? "India"} · {data.weather.climate_zone} climate
         </p>

@@ -26,6 +26,7 @@ export type Opening2D = {
 export type Room2D = {
   id: string;
   name: string;
+  name_source: "ocr" | "heuristic";
   polygon: Point2D[];
   area_m2: number;
   centroid: Point2D;
@@ -112,6 +113,14 @@ export type Model3D = {
   walls: Wall3D[];
   slab: FloorSlab3D;
   interiors: InteriorAsset3D[];
+  labels: Array<{
+    id: string;
+    room_id: string;
+    text: string;
+    position: Point3D;
+    confidence: number;
+    source: "ocr" | "heuristic";
+  }>;
 };
 
 export type CostSummary = {

@@ -12,6 +12,7 @@ from app.models import (
     InteriorAsset3D,
     Model3D,
     Point3D,
+    RoomLabel3D,
     Wall3D,
 )
 
@@ -36,12 +37,14 @@ class ModelService:
             walls=self._walls_to_3d(plan, rec_map, floor_height_m, variant="primary"),
             slab=self._slab(plan, rec_map, variant="primary"),
             interiors=[],
+            labels=self._room_labels(plan),
         )
         primary_interior = primary_simple.model_copy(
             update={
                 "id": f"model-{uuid4().hex[:10]}",
                 "detail_level": "interior",
                 "interiors": self._interior_assets(plan),
+                "labels": self._room_labels(plan),
             }
         )
 
@@ -54,12 +57,14 @@ class ModelService:
             ),
             slab=self._slab(plan, rec_map, variant="alternative"),
             interiors=[],
+            labels=self._room_labels(plan),
         )
         alternative_interior = alternative_simple.model_copy(
             update={
                 "id": f"model-{uuid4().hex[:10]}",
                 "detail_level": "interior",
                 "interiors": self._interior_assets(plan),
+                "labels": self._room_labels(plan),
             }
         )
 
@@ -256,3 +261,19 @@ class ModelService:
                 )
             )
         return assets
+
+    @staticmethod
+    def _room_labels(plan: FloorPlan2D) -> list[RoomLabel3D]:
+        labels: list[RoomLabel3D] = []
+        for room in plan.rooms:
+            labels.append(
+                RoomLabel3D(
+                    id=f"label-{room.id}",
+                    room_id=room.id,
+                    text=room.name,
+                    position=Point3D(x=room.centroid.x, y=2.25, z=room.centroid.y),
+                    confidence=room.confidence,
+                    source=room.name_source,
+                )
+            )
+        return labels
