@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useMemo, useState, useEffect, Suspense } from "react";
+import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, Grid, Environment, ContactShadows, Center } from "@react-three/drei";
-import { Color } from "three";
+import { Color, TextureLoader } from "three";
 
 import { Model3D, FloorPlan2D } from "@/lib/types";
 
@@ -16,6 +16,8 @@ type Props = {
   showPartitionWalls?: boolean;
   plan2d?: FloorPlan2D;
   hiddenWallIds?: string[];
+  file?: File | null;
+  showFloorOverlay?: boolean;
 };
 
 function WallMesh({
@@ -83,6 +85,52 @@ function SlabMesh({ model }: { model: Model3D }) {
   );
 }
 
+function TextureOverlay({ textureUrl, plan2d }: { textureUrl: string, plan2d: FloorPlan2D }) {
+  const texture = useLoader(TextureLoader, textureUrl);
+  
+  const allX = [
+    ...plan2d.walls.flatMap((wall) => [wall.start.x, wall.end.x]),
+    ...plan2d.rooms.flatMap((room) => room.polygon.map((point) => point.x))
+  ];
+  const allY = [
+    ...plan2d.walls.flatMap((wall) => [wall.start.y, wall.end.y]),
+    ...plan2d.rooms.flatMap((room) => room.polygon.map((point) => point.y))
+  ];
+
+  const minX = 0;
+  const minY = 0;
+  const maxX = plan2d.image_width_px * plan2d.scale_m_per_px || Math.max(...allX, 10);
+  const maxY = plan2d.image_height_px * plan2d.scale_m_per_px || Math.max(...allY, 10);
+
+  const width = maxX - minX;
+  const depth = maxY - minY;
+  const centerX = minX + width / 2;
+  const centerZ = minY + depth / 2;
+
+  return (
+    <mesh position={[centerX, 0.01, centerZ]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[width, depth]} />
+      <meshStandardMaterial map={texture} transparent opacity={0.8} />
+    </mesh>
+  );
+}
+
+function FloorOverlayMesh({ plan2d, file }: { plan2d?: FloorPlan2D; file?: File | null }) {
+  const [textureUrl, setTextureUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setTextureUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [file]);
+
+  if (!plan2d || !textureUrl) return null;
+
+  return <TextureOverlay textureUrl={textureUrl} plan2d={plan2d} />;
+}
+
 function InteriorAsset({ asset }: { asset: Model3D["interiors"][number] }) {
   const sizeScale = asset.asset_url ? 1.0 : 0.95;
   
@@ -138,7 +186,9 @@ export function Model3DViewer({
   showLoadBearingWalls = true,
   showPartitionWalls = true,
   plan2d,
-  hiddenWallIds = []
+  hiddenWallIds = [],
+  file,
+  showFloorOverlay
 }: Props) {
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>
@@ -171,6 +221,9 @@ export function Model3DViewer({
         <Center position={[0, 0, 0]} disableY>
           <group>
             <SlabMesh model={model} />
+            <Suspense fallback={null}>
+              {showFloorOverlay && <FloorOverlayMesh plan2d={plan2d} file={file} />}
+            </Suspense>
 
             {model.walls.map((wall) => {
               if (hiddenWallIds.includes(wall.source_wall_id)) return null;

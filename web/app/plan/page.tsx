@@ -4,7 +4,7 @@ import { useProject } from "../ProjectContext";
 import { Plan2DViewer } from "@/components/Plan2DViewer";
 
 export default function PlanPage() {
-  const { project, selectedElementId, setSelectedElementId } = useProject();
+  const { project, selectedElementId, setSelectedElementId, file } = useProject();
 
   if (!project) {
     return <div className="page-wrapper"><p className="empty-state">Please upload a project first.</p></div>;
@@ -17,6 +17,7 @@ export default function PlanPage() {
           plan={project.plan_2d} 
           selectedElementId={selectedElementId} 
           onSelectElement={setSelectedElementId} 
+          file={file}
         />
       </div>
 

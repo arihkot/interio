@@ -6,11 +6,12 @@ import { Model3DViewer } from "@/components/Model3DViewer";
 import { ModelControls } from "@/components/ModelControls";
 
 export default function ModelPage() {
-  const { project, activeModel, selectedElementId, setSelectedElementId, variant, detail, setVariant, setDetail } = useProject();
+  const { project, activeModel, selectedElementId, setSelectedElementId, variant, detail, setVariant, setDetail, file } = useProject();
   
   const [wallHeight, setWallHeight] = useState(3.0);
   const [showLoadBearingWalls, setShowLoadBearingWalls] = useState(true);
   const [showPartitionWalls, setShowPartitionWalls] = useState(true);
+  const [showFloorOverlay, setShowFloorOverlay] = useState(false);
   const [hiddenWallIds, setHiddenWallIds] = useState<string[]>([]);
 
   const handleRemoveWall = (id: string) => {
@@ -58,6 +59,8 @@ export default function ModelPage() {
             showPartitionWalls={showPartitionWalls}
             plan2d={project.plan_2d}
             hiddenWallIds={hiddenWallIds}
+            file={file}
+            showFloorOverlay={showFloorOverlay}
           />
         ) : (
           <div className="empty-state" style={{ height: "100%", border: "none" }}>
@@ -83,6 +86,8 @@ export default function ModelPage() {
             onShowLoadBearingWallsChange={setShowLoadBearingWalls}
             showPartitionWalls={showPartitionWalls}
             onShowPartitionWallsChange={setShowPartitionWalls}
+            showFloorOverlay={showFloorOverlay}
+            onShowFloorOverlayChange={setShowFloorOverlay}
             selectedWallInfo={selectedWallInfo}
             onRemoveWall={handleRemoveWall}
           />

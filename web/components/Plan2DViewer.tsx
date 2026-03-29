@@ -1,21 +1,34 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { FloorPlan2D } from "@/lib/types";
 
 type Props = {
   plan: FloorPlan2D;
   selectedElementId: string | null;
   onSelectElement: (elementId: string) => void;
+  file?: File | null;
 };
 
 const COLOR_LOAD_BEARING = "#9B3E2E";
 const COLOR_PARTITION = "#59767F";
 const COLOR_ROOM = "#DDE6EB";
 
-export function Plan2DViewer({ plan, selectedElementId, onSelectElement }: Props) {
+export function Plan2DViewer({ plan, selectedElementId, onSelectElement, file }: Props) {
   const width = 640;
   const height = 440;
   const padding = 24;
+  
+  const [showOverlay, setShowOverlay] = useState(true);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImageUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [file]);
 
   const allX = [
     ...plan.walls.flatMap((wall) => [wall.start.x, wall.end.x]),
@@ -26,10 +39,10 @@ export function Plan2DViewer({ plan, selectedElementId, onSelectElement }: Props
     ...plan.rooms.flatMap((room) => room.polygon.map((point) => point.y))
   ];
 
-  const minX = Math.min(...allX, 0);
-  const maxX = Math.max(...allX, 10);
-  const minY = Math.min(...allY, 0);
-  const maxY = Math.max(...allY, 10);
+  const minX = 0;
+  const minY = 0;
+  const maxX = plan.image_width_px * plan.scale_m_per_px || Math.max(...allX, 10);
+  const maxY = plan.image_height_px * plan.scale_m_per_px || Math.max(...allY, 10);
 
   const scaleX = (width - padding * 2) / Math.max(0.001, maxX - minX);
   const scaleY = (height - padding * 2) / Math.max(0.001, maxY - minY);
@@ -107,9 +120,49 @@ export function Plan2DViewer({ plan, selectedElementId, onSelectElement }: Props
               />
             );
           })}
+
+          {showOverlay && imageUrl && (
+            <image
+              href={imageUrl}
+              x={tx(minX)}
+              y={ty(minY)}
+              width={(maxX - minX) * scale}
+              height={(maxY - minY) * scale}
+              preserveAspectRatio="none"
+              opacity={0.8}
+              style={{ pointerEvents: "none" }}
+            />
+          )}
         </g>
       </svg>
       
+      <div 
+        style={{ 
+          position: "absolute", 
+          top: "2.5rem", 
+          right: "2.5rem", 
+          pointerEvents: "auto", 
+          zIndex: 10
+        }}
+      >
+        <button
+          onClick={() => setShowOverlay(!showOverlay)}
+          style={{
+            padding: "0.5rem 1rem",
+            background: showOverlay ? "var(--brand)" : "var(--surface)",
+            color: showOverlay ? "white" : "var(--text)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            cursor: "pointer",
+            fontWeight: 500,
+            boxShadow: "var(--shadow-sm)",
+            transition: "all 0.2s"
+          }}
+        >
+          {showOverlay ? "Hide Original Floorplan" : "Show Original Floorplan"}
+        </button>
+      </div>
+
       <div 
         style={{ 
           position: "absolute", 

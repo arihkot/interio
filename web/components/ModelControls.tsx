@@ -11,6 +11,8 @@ type Props = {
   onShowLoadBearingWallsChange: (show: boolean) => void;
   showPartitionWalls: boolean;
   onShowPartitionWallsChange: (show: boolean) => void;
+  showFloorOverlay?: boolean;
+  onShowFloorOverlayChange?: (show: boolean) => void;
   selectedWallInfo?: {
     id: string;
     length: number;
@@ -27,6 +29,7 @@ export function ModelControls({
   wallHeight, onWallHeightChange,
   showLoadBearingWalls, onShowLoadBearingWallsChange,
   showPartitionWalls, onShowPartitionWallsChange,
+  showFloorOverlay, onShowFloorOverlayChange,
   selectedWallInfo, onRemoveWall
 }: Props) {
   return (
@@ -119,6 +122,17 @@ export function ModelControls({
             />
             Show Partition Walls
           </label>
+          {onShowFloorOverlayChange && (
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 500 }}>
+              <input 
+                type="checkbox" 
+                checked={!!showFloorOverlay} 
+                onChange={(e) => onShowFloorOverlayChange(e.target.checked)} 
+                style={{ width: "14px", height: "14px" }}
+              />
+              Show Original Floorplan Overlay
+            </label>
+          )}
         </div>
       </div>
 
