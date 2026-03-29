@@ -63,6 +63,19 @@ export function Plan2DViewer({ plan, selectedElementId, onSelectElement, file }:
         {/* Draw subtle grid background in the SVG bounding box if desired, or let it transparent. We'll leave it transparent to blend with the container */}
         
         <g transform={`translate(${width/2 - (maxX-minX)*scale/2 - padding}, ${height/2 - (maxY-minY)*scale/2 - padding})`}>
+          {showOverlay && imageUrl && (
+            <image
+              href={imageUrl}
+              x={tx(minX)}
+              y={ty(minY)}
+              width={(maxX - minX) * scale}
+              height={(maxY - minY) * scale}
+              preserveAspectRatio="none"
+              opacity={0.6}
+              style={{ pointerEvents: "none" }}
+            />
+          )}
+
           {plan.rooms.map((room) => (
             <g key={room.id}>
               <polygon
@@ -120,19 +133,6 @@ export function Plan2DViewer({ plan, selectedElementId, onSelectElement, file }:
               />
             );
           })}
-
-          {showOverlay && imageUrl && (
-            <image
-              href={imageUrl}
-              x={tx(minX)}
-              y={ty(minY)}
-              width={(maxX - minX) * scale}
-              height={(maxY - minY) * scale}
-              preserveAspectRatio="none"
-              opacity={0.8}
-              style={{ pointerEvents: "none" }}
-            />
-          )}
         </g>
       </svg>
       

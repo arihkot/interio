@@ -263,6 +263,24 @@ def export_model(project_id: str, variant: str, detail: str) -> FileResponse:
     return FileResponse(path, media_type="application/json", filename=path.name)
 
 
+@app.post("/api/web3/mint/{project_id}")
+def mint_project_nft(project_id: str) -> dict:
+    from app.services.stellar_service import mint_stellar_nft
+
+    project = project_store.get(project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    cost = project.cost_summary
+    total_cost = str(cost.primary_total_cost_inr)
+    maintenance = str(cost.annual_maintenance_inr)
+    model_url = (
+        f"http://localhost:8000/api/export/model-obj/{project_id}/primary/simple"
+    )
+
+    return mint_stellar_nft(project_id, total_cost, maintenance, model_url)
+
+
 @app.get("/api/export/model-obj/{project_id}/{variant}/{detail}")
 def export_model_obj(project_id: str, variant: str, detail: str) -> FileResponse:
     project = project_store.get(project_id)
