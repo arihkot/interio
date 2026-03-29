@@ -1,10 +1,9 @@
-# Project Title
-Interio - Autonomous Structural Intelligence System
+# Interio - Autonomous Structural Intelligence System
 
-## Project Description
+## Description
 Interio is an autonomous structural intelligence system that streamlines architectural planning. It acts as a floor plan parser, 2D and 3D model generator, and a material optimizer providing explainable recommendations. It incorporates India-context pricing, cost lifecycle analysis, and comprehensive export workflows, making structural planning more intuitive and data-driven.
 
-## Project Vision
+## Vision
 To revolutionize the architectural and construction planning process by providing an intelligent, automated tool that bridges the gap between raw floor plans and actionable, cost-optimized, and context-aware 3D models with transparent material and pricing recommendations.
 
 ## Key Features
@@ -21,22 +20,10 @@ To revolutionize the architectural and construction planning process by providin
 - **Web3 Bonus:** Mint 3D models + cost metrics as an NFT strictly on Stellar (Soroban contracts included)
 
 ## Deployed Smartcontract Details
-- **Contract ID:** <!-- Insert Contract ID here -->
+- **Contract ID:** CD2V73KLOFGWJTQNKTBIHQMPXKHE5MPYOA4QCH422M365XXKACDRM76W
 - **Screenshot of the blockexplorer showing the deployed contract details:**
-  <!-- Add a screenshot here, e.g., ![Block Explorer Screenshot](docs/block_explorer.png) -->
-
-## UI Screenshots
-<!-- Add screenshots of your application's user interface -->
-- ![UI Screenshot 1](docs/ui-1.png)
-- ![UI Screenshot 2](docs/ui-2.png)
-
-## Demo link of their live app (Optional)
-<!-- Provide a link to the live application -->
-[Live dApp Demo](https://your-demo-link.com)
-
-## Demo video demonstrating the dApp's features (Optional)
-<!-- Provide a link to a video demonstrating the dApp's features -->
-[Watch the Demo Video](https://your-video-link.com)
+<img width="1406" height="866" alt="image" src="https://github.com/user-attachments/assets/140217f9-df39-44ba-ab85-31210390a6a5" />
+<img width="1409" height="860" alt="image" src="https://github.com/user-attachments/assets/41ca76fd-604c-4391-8502-2ad769ceb72a" />
 
 ## Project Setup Guide
 
