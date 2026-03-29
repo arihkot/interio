@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Grid, Environment, ContactShadows, Center, Text } from "@react-three/drei";
+import { OrbitControls, Grid, Environment, ContactShadows, Center } from "@react-three/drei";
 import { Color } from "three";
 
 import { Model3D } from "@/lib/types";
@@ -40,11 +40,11 @@ function WallMesh({
     <mesh position={[x, y, z]} rotation={[0, -rotation, 0]} onClick={onClick} castShadow receiveShadow>
       <boxGeometry args={[length, height, thickness]} />
       <meshStandardMaterial 
-        color={selected ? "#fbbf24" : color} 
+        color={selected ? "#2563eb" : color} 
         roughness={0.7} 
         metalness={0.1}
-        emissive={selected ? "#d97706" : "#000000"}
-        emissiveIntensity={selected ? 0.3 : 0}
+        emissive={selected ? "#1d4ed8" : "#000000"}
+        emissiveIntensity={selected ? 0.2 : 0}
       />
     </mesh>
   );
@@ -88,27 +88,10 @@ function InteriorAsset({ asset }: { asset: Model3D["interiors"][number] }) {
   );
 }
 
-function RoomLabel({ label }: { label: Model3D["labels"][number] }) {
-  const color = label.source === "ocr" ? "#0f172a" : "#475569";
-  return (
-    <Text
-      position={[label.position.x, label.position.y, label.position.z]}
-      fontSize={0.36}
-      color={color}
-      anchorX="center"
-      anchorY="middle"
-      outlineWidth={0.02}
-      outlineColor="#ffffff"
-    >
-      {label.text}
-    </Text>
-  );
-}
-
 export function Model3DViewer({ model, selectedElementId, onSelectElement }: Props) {
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <Canvas shadows camera={{ position: [12, 12, 16], fov: 45 }}>
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <Canvas shadows camera={{ position: [12, 12, 16], fov: 45 }} style={{ width: "100%", height: "100%" }}>
         <color attach="background" args={["#f8fafc"]} />
         
         <ambientLight intensity={0.4} />
@@ -165,10 +148,6 @@ export function Model3DViewer({ model, selectedElementId, onSelectElement }: Pro
 
             {model.interiors.map((asset) => (
               <InteriorAsset key={asset.id} asset={asset} />
-            ))}
-
-            {model.labels.map((label) => (
-              <RoomLabel key={label.id} label={label} />
             ))}
           </group>
         </Center>

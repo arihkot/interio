@@ -9,7 +9,7 @@ type Props = {
 
 export function ModelControls({ variant, detail, onVariantChange, onDetailChange }: Props) {
   return (
-    <section className="panel controls-panel">
+    <section className="panel controls-panel" style={{ boxShadow: "var(--shadow)", background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(10px)" }}>
       <div className="panel-header">
         <h3>Model Controls</h3>
         <p>Compare recommendation variant and detail level.</p>
