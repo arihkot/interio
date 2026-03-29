@@ -1,0 +1,167 @@
+[
+  {
+    "key": "aac_blocks",
+    "name": "AAC Blocks",
+    "best_use": ["partition_wall"],
+    "base_unit_cost_inr": 4200,
+    "unit": "m3",
+    "strength_score": 0.62,
+    "durability_years": 45,
+    "maintenance_ratio_annual": 0.012,
+    "climate_fit": {
+      "hot_dry": 0.82,
+      "warm_humid": 0.78,
+      "composite": 0.81,
+      "cold": 0.74
+    },
+    "availability_regions": {
+      "Maharashtra": 0.88,
+      "Karnataka": 0.84,
+      "Tamil Nadu": 0.83,
+      "Delhi": 0.8,
+      "default": 0.76
+    },
+    "color": "#5E7A84"
+  },
+  {
+    "key": "red_brick",
+    "name": "Red Brick",
+    "best_use": ["load_bearing_wall", "general_wall"],
+    "base_unit_cost_inr": 5600,
+    "unit": "m3",
+    "strength_score": 0.78,
+    "durability_years": 55,
+    "maintenance_ratio_annual": 0.017,
+    "climate_fit": {
+      "hot_dry": 0.8,
+      "warm_humid": 0.72,
+      "composite": 0.79,
+      "cold": 0.75
+    },
+    "availability_regions": {
+      "Uttar Pradesh": 0.9,
+      "Bihar": 0.9,
+      "West Bengal": 0.88,
+      "Rajasthan": 0.82,
+      "default": 0.8
+    },
+    "color": "#8F4B3E"
+  },
+  {
+    "key": "rcc_m25",
+    "name": "RCC M25",
+    "best_use": ["slab", "column", "load_bearing_wall"],
+    "base_unit_cost_inr": 7400,
+    "unit": "m3",
+    "strength_score": 0.94,
+    "durability_years": 75,
+    "maintenance_ratio_annual": 0.011,
+    "climate_fit": {
+      "hot_dry": 0.9,
+      "warm_humid": 0.88,
+      "composite": 0.9,
+      "cold": 0.89
+    },
+    "availability_regions": {
+      "Maharashtra": 0.95,
+      "Delhi": 0.95,
+      "Karnataka": 0.92,
+      "Tamil Nadu": 0.93,
+      "default": 0.9
+    },
+    "color": "#4A5258"
+  },
+  {
+    "key": "steel_frame_fe500",
+    "name": "Steel Frame Fe500",
+    "best_use": ["column", "long_span", "load_bearing_wall"],
+    "base_unit_cost_inr": 73000,
+    "unit": "kg",
+    "strength_score": 0.97,
+    "durability_years": 80,
+    "maintenance_ratio_annual": 0.018,
+    "climate_fit": {
+      "hot_dry": 0.85,
+      "warm_humid": 0.76,
+      "composite": 0.82,
+      "cold": 0.83
+    },
+    "availability_regions": {
+      "Gujarat": 0.93,
+      "Maharashtra": 0.92,
+      "Jharkhand": 0.91,
+      "Odisha": 0.9,
+      "default": 0.86
+    },
+    "color": "#3E4A5A"
+  },
+  {
+    "key": "hollow_concrete_block",
+    "name": "Hollow Concrete Block",
+    "best_use": ["partition_wall"],
+    "base_unit_cost_inr": 3900,
+    "unit": "m3",
+    "strength_score": 0.58,
+    "durability_years": 42,
+    "maintenance_ratio_annual": 0.014,
+    "climate_fit": {
+      "hot_dry": 0.79,
+      "warm_humid": 0.75,
+      "composite": 0.78,
+      "cold": 0.72
+    },
+    "availability_regions": {
+      "Kerala": 0.87,
+      "Tamil Nadu": 0.85,
+      "Karnataka": 0.83,
+      "default": 0.77
+    },
+    "color": "#7B8085"
+  },
+  {
+    "key": "flyash_brick",
+    "name": "Fly Ash Brick",
+    "best_use": ["general_wall", "partition_wall", "load_bearing_wall"],
+    "base_unit_cost_inr": 4700,
+    "unit": "m3",
+    "strength_score": 0.73,
+    "durability_years": 62,
+    "maintenance_ratio_annual": 0.012,
+    "climate_fit": {
+      "hot_dry": 0.84,
+      "warm_humid": 0.82,
+      "composite": 0.85,
+      "cold": 0.8
+    },
+    "availability_regions": {
+      "Chhattisgarh": 0.9,
+      "Odisha": 0.88,
+      "Madhya Pradesh": 0.87,
+      "default": 0.81
+    },
+    "color": "#6D5F5A"
+  },
+  {
+    "key": "precast_panel",
+    "name": "Precast Concrete Panel",
+    "best_use": ["structural_wall", "slab", "load_bearing_wall"],
+    "base_unit_cost_inr": 6900,
+    "unit": "m2",
+    "strength_score": 0.87,
+    "durability_years": 70,
+    "maintenance_ratio_annual": 0.01,
+    "climate_fit": {
+      "hot_dry": 0.88,
+      "warm_humid": 0.85,
+      "composite": 0.87,
+      "cold": 0.85
+    },
+    "availability_regions": {
+      "Delhi": 0.86,
+      "Maharashtra": 0.87,
+      "Tamil Nadu": 0.84,
+      "default": 0.8
+    },
+    "color": "#525B63"
+  }
+]
