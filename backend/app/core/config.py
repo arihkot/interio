@@ -13,12 +13,10 @@ class Settings(BaseSettings):
     app_name: str = "interio-engine"
     environment: str = "development"
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-3-flash"
+    gemini_model: str = "gemini-1.5-flash"
     weather_api_key: str = ""
     world_bank_base_url: str = "https://api.worldbank.org/v2"
     world_bank_timeout_sec: int = 8
-    ocr_use_glm: bool = True
-    glm_ocr_model_name: str = "THUDM/glm-4v-0.9b"
     allowed_origins: list[str] = Field(
         default_factory=lambda: ["http://localhost:3000"]
     )

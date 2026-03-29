@@ -41,7 +41,6 @@ class Opening2D(BaseModel):
 class Room2D(BaseModel):
     id: str
     name: str
-    name_source: Literal["ocr", "heuristic"] = "heuristic"
     polygon: list[Point2D]
     area_m2: float
     centroid: Point2D
@@ -120,15 +119,6 @@ class InteriorAsset3D(BaseModel):
     rotation_deg: float = 0.0
 
 
-class RoomLabel3D(BaseModel):
-    id: str
-    room_id: str
-    text: str
-    position: Point3D
-    confidence: float = 0.0
-    source: Literal["ocr", "heuristic"] = "heuristic"
-
-
 class Model3D(BaseModel):
     id: str
     detail_level: Literal["simple", "interior"]
@@ -136,7 +126,6 @@ class Model3D(BaseModel):
     walls: list[Wall3D]
     slab: FloorSlab3D
     interiors: list[InteriorAsset3D] = Field(default_factory=list)
-    labels: list[RoomLabel3D] = Field(default_factory=list)
 
 
 class MaterialSpec(BaseModel):

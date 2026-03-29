@@ -16,7 +16,8 @@ class ChatService:
         if self.settings.gemini_api_key:
             try:
                 return self._reply_with_llm(project, message)
-            except Exception:
+            except Exception as e:
+                print(f"Error in LLM reply: {e}")
                 pass
         return self._reply_fallback(project, message)
 
@@ -47,7 +48,17 @@ class ChatService:
         }
         prompt = (
             "You are Interio Assistant. Answer clearly with Indian construction context and INR. "
-            "If user asks recommendation reasons, cite scores and climate. Keep response under 120 words unless asked for detail.\n"
+            "If user asks recommendation reasons, cite scores and climate. Keep response under 120 words unless asked for detail.\n\n"
+            "General Material Context:\n"
+            "| Material | Cost | Strength | Durability | Best Use |\n"
+            "| --- | --- | --- | --- | --- |\n"
+            "| AAC Blocks | Low | Medium | High | Partition walls |\n"
+            "| Red Brick | Medium | High | Medium | Load-bearing walls |\n"
+            "| RCC | High | Very High | Very High | Columns, slabs |\n"
+            "| Steel Frame | High | Very High | Very High | Long spans (>5 m) |\n"
+            "| Hollow Concrete Block | Low–Med | Medium | Medium | Non-structural walls |\n"
+            "| Fly Ash Brick | Low | Medium–High | High | General walling |\n"
+            "| Precast Concrete Panel | Med–High | High | Very High | Structural walls, slabs |\n\n"
             f"Project context: {json.dumps(context)}\n"
             f"User message: {message}"
         )

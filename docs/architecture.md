@@ -14,7 +14,6 @@ The processing is India-context by default (INR, climate zones, state-level avai
 1. **Floor Plan Parsing**
    - OpenCV preprocessing + Hough walls + contour rooms.
    - Optional local models:
-     - GLM-4V-0.9B OCR (`THUDM/glm-4v-0.9b`) preferred for room text extraction.
      - YOLO (openings) via `OpeningDetector`.
      - PaddleOCR (labels) via `OCRService`.
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
@@ -15,6 +14,7 @@ from app.services.ocr_service import OCRService
 from app.services.opening_detector import OpeningDetector
 from app.utils.geometry import (
     line_length,
+    midpoint,
     orthogonalize_segment,
     quantize_point,
 )
@@ -58,9 +58,8 @@ class PlanParser:
                 )
 
         binary = self._binarize(gray)
-        wall_mask = self._extract_wall_mask(binary)
-        walls = self._detect_walls(wall_mask)
-        rooms, boundary = self._detect_rooms(wall_mask)
+        walls = self._detect_walls(binary)
+        rooms, boundary = self._detect_rooms(binary)
         openings = self._detect_openings(image, walls)
         self._assign_room_names(rooms, labels)
 
@@ -75,8 +74,6 @@ class PlanParser:
             notes.append(
                 "OCR model unavailable locally; room names inferred heuristically."
             )
-        else:
-            notes.append(f"OCR backend in use: {self.ocr_service.backend}")
         if not self.opening_detector.available:
             notes.append(
                 "YOLO opening detector unavailable locally; CV heuristics used for doors/windows."
@@ -102,38 +99,6 @@ class PlanParser:
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
         return cleaned
-
-    def _extract_wall_mask(self, binary: np.ndarray) -> np.ndarray:
-        h, w = binary.shape[:2]
-        h_kernel_len = max(15, w // 40)
-        v_kernel_len = max(15, h // 40)
-
-        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (h_kernel_len, 1))
-        vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, v_kernel_len))
-
-        cleaned = cv2.morphologyEx(
-            binary,
-            cv2.MORPH_OPEN,
-            cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)),
-            iterations=1,
-        )
-
-        horizontal = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, horizontal_kernel)
-        vertical = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, vertical_kernel)
-
-        wall_mask = cv2.bitwise_or(horizontal, vertical)
-        wall_mask = cv2.morphologyEx(
-            wall_mask,
-            cv2.MORPH_CLOSE,
-            cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11)),
-            iterations=2,
-        )
-        wall_mask = cv2.dilate(
-            wall_mask,
-            cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)),
-            iterations=1,
-        )
-        return wall_mask
 
     def _merge_collinear_walls(self, walls: list[Wall2D]) -> list[Wall2D]:
         merged_walls = []
@@ -172,11 +137,7 @@ class PlanParser:
                 groups[matched_key].append(seg)
 
             merged_result = []
-            for _, segs in groups.items():
-                const_values = [
-                    (seg.start.y if is_horizontal else seg.start.x) for seg in segs
-                ]
-                const_val = sum(const_values) / len(const_values)
+            for const_val, segs in groups.items():
                 # Extract intervals
                 intervals = []
                 for s in segs:
@@ -222,7 +183,6 @@ class PlanParser:
                     if length < 0.1:
                         continue
 
-                    avg_conf = sum(seg.confidence for seg in segs) / max(len(segs), 1)
                     merged_result.append(
                         Wall2D(
                             id="",  # will be set later
@@ -231,7 +191,7 @@ class PlanParser:
                             thickness_m=interval[2],
                             length_m=round(length, 3),
                             is_load_bearing=False,
-                            confidence=round(max(interval[3], avg_conf), 2),
+                            confidence=interval[3],
                         )
                     )
 
@@ -246,20 +206,13 @@ class PlanParser:
         return merged_walls
 
     def _detect_walls(self, binary: np.ndarray) -> list[Wall2D]:
-        try:
-            skeleton = cv2.ximgproc.thinning(
-                binary, thinningType=cv2.ximgproc.THINNING_GUOHALL
-            )
-        except Exception:
-            skeleton = cv2.Canny(binary, 50, 150)
-
         lines = cv2.HoughLinesP(
-            skeleton,
+            binary,
             rho=1,
             theta=np.pi / 180,
-            threshold=max(20, self.config.hough_threshold - 30),
-            minLineLength=max(self.config.min_wall_length_px, 20),
-            maxLineGap=30,
+            threshold=self.config.hough_threshold,
+            minLineLength=self.config.min_wall_length_px,
+            maxLineGap=10,
         )
         if lines is None:
             return []
@@ -269,8 +222,6 @@ class PlanParser:
             x1, y1, x2, y2 = line[0].tolist()
             x1m, y1m, x2m, y2m = self._to_meters(x1, y1, x2, y2)
             x1m, y1m, x2m, y2m = orthogonalize_segment(x1m, y1m, x2m, y2m)
-            if not (abs(y1m - y2m) < 0.12 or abs(x1m - x2m) < 0.12):
-                continue
             x1m, y1m = quantize_point(x1m, y1m)
             x2m, y2m = quantize_point(x2m, y2m)
             length = line_length(x1m, y1m, x2m, y2m)
@@ -295,106 +246,11 @@ class PlanParser:
             idx += 1
         deduped = self._dedupe_walls(wall_segments)
         merged = self._merge_collinear_walls(deduped)
-        split = self._split_walls_at_intersections(merged)
-        final = self._dedupe_walls(split)
-        self._mark_load_bearing(final)
-        return final
+        self._mark_load_bearing(merged)
+        return merged
 
-    def _split_walls_at_intersections(self, walls: list[Wall2D]) -> list[Wall2D]:
-        if not walls:
-            return walls
-
-        horizontal: list[Wall2D] = []
-        vertical: list[Wall2D] = []
-        others: list[Wall2D] = []
-        for wall in walls:
-            if abs(wall.start.y - wall.end.y) < 0.11:
-                horizontal.append(wall)
-            elif abs(wall.start.x - wall.end.x) < 0.11:
-                vertical.append(wall)
-            else:
-                others.append(wall)
-
-        h_splits: dict[str, set[float]] = defaultdict(set)
-        v_splits: dict[str, set[float]] = defaultdict(set)
-        tol = 0.08
-        for h in horizontal:
-            hy = h.start.y
-            hx1 = min(h.start.x, h.end.x)
-            hx2 = max(h.start.x, h.end.x)
-            for v in vertical:
-                vx = v.start.x
-                vy1 = min(v.start.y, v.end.y)
-                vy2 = max(v.start.y, v.end.y)
-                if hx1 - tol <= vx <= hx2 + tol and vy1 - tol <= hy <= vy2 + tol:
-                    h_splits[h.id].add(vx)
-                    v_splits[v.id].add(hy)
-
-        segmented: list[Wall2D] = []
-
-        def split_line(
-            base: Wall2D, split_values: set[float], is_horizontal: bool
-        ) -> None:
-            coords = []
-            if is_horizontal:
-                coords = [base.start.x, base.end.x]
-            else:
-                coords = [base.start.y, base.end.y]
-            coords.extend(split_values)
-            coords_sorted = sorted(coords)
-
-            for i in range(len(coords_sorted) - 1):
-                a = coords_sorted[i]
-                b = coords_sorted[i + 1]
-                if abs(a - b) < 0.12:
-                    continue
-                if is_horizontal:
-                    start = Point2D(x=round(a, 3), y=round(base.start.y, 3))
-                    end = Point2D(x=round(b, 3), y=round(base.end.y, 3))
-                else:
-                    start = Point2D(x=round(base.start.x, 3), y=round(a, 3))
-                    end = Point2D(x=round(base.end.x, 3), y=round(b, 3))
-                segmented.append(
-                    Wall2D(
-                        id="",
-                        start=start,
-                        end=end,
-                        thickness_m=base.thickness_m,
-                        length_m=round(line_length(start.x, start.y, end.x, end.y), 3),
-                        is_load_bearing=False,
-                        confidence=base.confidence,
-                    )
-                )
-
-        for wall in horizontal:
-            split_line(wall, h_splits.get(wall.id, set()), is_horizontal=True)
-        for wall in vertical:
-            split_line(wall, v_splits.get(wall.id, set()), is_horizontal=False)
-        segmented.extend(others)
-
-        # Keep only meaningful segments to avoid tiny noisy fragments.
-        segmented = [segment for segment in segmented if segment.length_m >= 0.28]
-        return segmented
-
-    def _detect_rooms(
-        self, wall_mask: np.ndarray
-    ) -> tuple[list[Room2D], list[Point2D]]:
-        closed = cv2.morphologyEx(
-            wall_mask,
-            cv2.MORPH_CLOSE,
-            cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9)),
-            iterations=2,
-        )
-        inv = cv2.bitwise_not(closed)
-        h, w = inv.shape[:2]
-        flood = inv.copy()
-        mask = np.zeros((h + 2, w + 2), dtype=np.uint8)
-        cv2.floodFill(flood, mask, (0, 0), 128)
-        room_mask = cv2.inRange(flood, 255, 255)
-
-        contours, _ = cv2.findContours(
-            room_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+    def _detect_rooms(self, binary: np.ndarray) -> tuple[list[Room2D], list[Point2D]]:
+        contours, _ = cv2.findContours(binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         rooms: list[Room2D] = []
         room_idx = 1
         polygons: list[Polygon] = []
@@ -403,15 +259,11 @@ class PlanParser:
             if area < self.config.room_area_min_px:
                 continue
             perimeter = cv2.arcLength(contour, True)
-            approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
+            approx = cv2.approxPolyDP(contour, 0.01 * perimeter, True)
             points = [self._px_to_point(p[0][0], p[0][1]) for p in approx]
             if len(points) < 4:
                 continue
-            poly = (
-                Polygon([(p.x, p.y) for p in points])
-                .buffer(0)
-                .simplify(0.05, preserve_topology=True)
-            )
+            poly = Polygon([(p.x, p.y) for p in points]).buffer(0)
             if not poly.is_valid or poly.area <= 0.3:
                 continue
             polygons.append(poly)
@@ -419,7 +271,6 @@ class PlanParser:
             room = Room2D(
                 id=f"R{room_idx}",
                 name=self._guess_room_name(room_idx),
-                name_source="heuristic",
                 polygon=[
                     Point2D(x=round(x, 3), y=round(y, 3))
                     for x, y in list(poly.exterior.coords)[:-1]
@@ -456,8 +307,6 @@ class PlanParser:
 
         detections = self.opening_detector.detect(image)
         idx = 1
-        per_wall_count: dict[str, int] = defaultdict(int)
-        seen: list[tuple[float, float]] = []
         for detection in detections:
             cx = detection.x + detection.w * 0.5
             cy = detection.y + detection.h * 0.5
@@ -465,31 +314,19 @@ class PlanParser:
             wall = self._nearest_wall(cxm, cym, walls)
             if wall is None:
                 continue
-            width_m = detection.w * self.config.default_scale_m_per_px
-            if width_m < 0.45 or width_m > 2.5:
-                continue
-            is_duplicate = any(
-                (cxm - sx) ** 2 + (cym - sy) ** 2 < 0.18 for sx, sy in seen
-            )
-            if is_duplicate:
-                continue
-            if per_wall_count[wall.id] >= 4:
-                continue
             openings.append(
                 Opening2D(
                     id=f"O{idx}",
                     wall_id=wall.id,
                     opening_type=detection.opening_type,
                     position=Point2D(x=round(cxm, 3), y=round(cym, 3)),
-                    width_m=round(width_m, 3),
+                    width_m=round(detection.w * self.config.default_scale_m_per_px, 3),
                     height_m=round(
                         (2.1 if detection.opening_type == "door" else 1.2), 2
                     ),
                     confidence=round(detection.confidence, 2),
                 )
             )
-            seen.append((cxm, cym))
-            per_wall_count[wall.id] += 1
             idx += 1
             if idx > 32:
                 break
@@ -511,7 +348,6 @@ class PlanParser:
                     best = label
             if best is not None and best_dist < 2.2:
                 room.name = best.text.title()
-                room.name_source = "ocr"
                 room.confidence = round(
                     min(0.95, max(room.confidence, best.confidence)), 2
                 )
@@ -574,16 +410,10 @@ class PlanParser:
     def _confidence_score(
         self, walls: list[Wall2D], rooms: list[Room2D], openings: list[Opening2D]
     ) -> float:
-        wall_score = min(len(walls) / 30, 1.0) * 0.34
-        room_score = min(len(rooms) / 12, 1.0) * 0.46
-        opening_score = min(len(openings) / 16, 1.0) * 0.12
-        avg_room_conf = (
-            sum(room.confidence for room in rooms) / len(rooms) if rooms else 0.0
-        )
-        quality_bonus = min(avg_room_conf, 0.08)
-        return round(
-            min(0.96, wall_score + room_score + opening_score + quality_bonus), 3
-        )
+        wall_score = min(len(walls) / 24, 1.0) * 0.4
+        room_score = min(len(rooms) / 8, 1.0) * 0.4
+        opening_score = min(len(openings) / 10, 1.0) * 0.2
+        return round(wall_score + room_score + opening_score, 3)
 
     def _nearest_wall(
         self, x: float, y: float, walls: list[Wall2D]
@@ -591,39 +421,14 @@ class PlanParser:
         nearest: Optional[Wall2D] = None
         best = 1e9
         for wall in walls:
-            d = self._point_to_segment_distance(
-                x,
-                y,
-                wall.start.x,
-                wall.start.y,
-                wall.end.x,
-                wall.end.y,
-            )
+            mx, my = midpoint(wall.start.x, wall.start.y, wall.end.x, wall.end.y)
+            d = ((mx - x) ** 2 + (my - y) ** 2) ** 0.5
             if d < best:
                 best = d
                 nearest = wall
-        if best > 0.45:
+        if best > 2.2:
             return None
         return nearest
-
-    @staticmethod
-    def _point_to_segment_distance(
-        px: float,
-        py: float,
-        x1: float,
-        y1: float,
-        x2: float,
-        y2: float,
-    ) -> float:
-        dx = x2 - x1
-        dy = y2 - y1
-        if abs(dx) < 1e-9 and abs(dy) < 1e-9:
-            return ((px - x1) ** 2 + (py - y1) ** 2) ** 0.5
-        t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)
-        t = max(0.0, min(1.0, t))
-        cx = x1 + t * dx
-        cy = y1 + t * dy
-        return ((px - cx) ** 2 + (py - cy) ** 2) ** 0.5
 
     def _to_meter_point(self, x_px: float, y_px: float) -> tuple[float, float]:
         return round(x_px * self.config.default_scale_m_per_px, 3), round(

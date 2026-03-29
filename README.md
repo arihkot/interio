@@ -38,7 +38,7 @@ If frontend shows "Failed to fetch" on upload:
 
 Pricing note: live proxy pricing now uses World Bank macro indicators (India CPI, GDP deflator, industry growth). If that feed is unavailable, Interio automatically falls back to local baseline pricing.
 
-If you also want optional local ML detectors (GLM OCR + PaddleOCR + YOLO):
+If you also want optional local ML detectors (PaddleOCR + YOLO):
 
 ```bash
 make dev-ml
@@ -103,16 +103,8 @@ The backend attempts to use local models if installed:
 
 - PaddleOCR for room labels
 - Ultralytics YOLO for opening detection
-- GLM-4V-0.9B (`THUDM/glm-4v-0.9b`) for local OCR-first label extraction
 
 If unavailable, CV heuristics are used.
-
-GLM OCR config in `backend/.env`:
-
-```env
-OCR_USE_GLM=true
-GLM_OCR_MODEL_NAME=THUDM/glm-4v-0.9b
-```
 
 ## Important Configuration
 

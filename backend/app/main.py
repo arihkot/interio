@@ -24,7 +24,6 @@ from app.services.explainability_service import ExplainabilityService
 from app.services.geometry_service import GeometryService
 from app.services.material_service import MaterialService
 from app.services.model_service import ModelService
-from app.services.ocr_service import OCRService
 from app.services.plan_parser import PlanParser
 from app.services.pricing_service import PricingService
 from app.services.project_store import ProjectStore
@@ -33,11 +32,7 @@ from app.services.weather_service import WeatherService
 
 settings = get_settings()
 material_service = MaterialService(settings.material_db_path)
-ocr_service = OCRService(
-    prefer_glm=settings.ocr_use_glm,
-    glm_model_name=settings.glm_ocr_model_name,
-)
-plan_parser = PlanParser(ocr_service=ocr_service)
+plan_parser = PlanParser()
 geometry_service = GeometryService()
 weather_service = WeatherService(settings)
 model_service = ModelService(settings.generated_dir)
