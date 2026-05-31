@@ -28,6 +28,11 @@ https://drive.google.com/file/d/1q6ymjfGxYkm3AkBGouhpVZocU9KEVkev/view?usp=drive
 <img width="1406" height="866" alt="image" src="https://github.com/user-attachments/assets/140217f9-df39-44ba-ab85-31210390a6a5" />
 <img width="1409" height="860" alt="image" src="https://github.com/user-attachments/assets/41ca76fd-604c-4391-8502-2ad769ceb72a" />
 
+## Tests
+<img width="811" height="225" alt="image" src="https://github.com/user-attachments/assets/b61faf5f-35f8-4ecd-b7d5-ac3f7c3ab65d" />
+<img width="1314" height="410" alt="image" src="https://github.com/user-attachments/assets/a2022d60-b71e-4738-b858-2aef9be2d6af" />
+
+
 ## Project Setup Guide
 
 ### One-command startup
