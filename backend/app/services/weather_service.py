@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import requests
+from functools import lru_cache
 from typing import Optional
 
 from app.core.config import Settings
@@ -21,6 +22,17 @@ class WeatherService:
         if lat >= 28:
             return "cold"
         return "hot_dry"
+
+    @lru_cache(maxsize=128)
+    def _do_fetch_live(self, lat: float, lon: float, api_key: str) -> dict:
+        query = f"{lat},{lon}"
+        response = requests.get(
+            "https://api.weatherapi.com/v1/current.json",
+            params={"key": api_key, "q": query, "aqi": "no"},
+            timeout=6,
+        )
+        response.raise_for_status()
+        return response.json()
 
     def fetch_weather(self, location: LocationContext) -> WeatherContext:
         if self.settings and self.settings.weather_api_key:
@@ -51,17 +63,14 @@ class WeatherService:
     def _fetch_live_weather(
         self, location: LocationContext
     ) -> Optional[WeatherContext]:
-        if not self.settings:
+        if not self.settings or not self.settings.weather_api_key:
             return None
         try:
-            query = f"{location.latitude},{location.longitude}"
-            response = requests.get(
-                "https://api.weatherapi.com/v1/current.json",
-                params={"key": self.settings.weather_api_key, "q": query, "aqi": "no"},
-                timeout=6,
-            )
-            response.raise_for_status()
-            data = response.json()
+            # Round to 2 decimal places to increase cache hits for nearby locations (~1.1km precision)
+            lat_round = round(location.latitude, 2)
+            lon_round = round(location.longitude, 2)
+            data = self._do_fetch_live(lat_round, lon_round, self.settings.weather_api_key)
+            
             current = data.get("current", {})
             loc = data.get("location", {})
             climate_zone = self.estimate_climate_zone(location)

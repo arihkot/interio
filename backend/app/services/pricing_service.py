@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any, Optional
+from functools import lru_cache
 
 import requests
 
@@ -67,7 +68,7 @@ class PricingService:
         )
 
     def _ratio_from_index(self, country: str, indicator: str) -> Optional[float]:
-        series = self._fetch_world_bank_series(country, indicator)
+        series = self._do_fetch_world_bank_series(country, indicator, self.settings.world_bank_base_url, self.settings.world_bank_timeout_sec)
         if not series:
             return None
         found: list[float] = []
@@ -89,7 +90,7 @@ class PricingService:
         return latest / previous
 
     def _ratio_from_percent(self, country: str, indicator: str) -> Optional[float]:
-        series = self._fetch_world_bank_series(country, indicator)
+        series = self._do_fetch_world_bank_series(country, indicator, self.settings.world_bank_base_url, self.settings.world_bank_timeout_sec)
         if not series:
             return None
         for point in series:
@@ -103,23 +104,31 @@ class PricingService:
             return max(0.75, min(1.35, 1.0 + pct / 100.0))
         return None
 
-    def _fetch_world_bank_series(
-        self, country: str, indicator: str
-    ) -> list[dict[str, Any]]:
-        endpoint = f"{self.settings.world_bank_base_url}/country/{country}/indicator/{indicator}"
+    @lru_cache(maxsize=32)
+    def _do_fetch_world_bank_series(
+        self, country: str, indicator: str, base_url: str, timeout: int
+    ) -> tuple[dict[str, Any], ...]:
+        # Return tuple of dicts to ensure hashability and prevent mutability issues, though requests.json() returns list.
+        endpoint = f"{base_url}/country/{country}/indicator/{indicator}"
         response = requests.get(
             endpoint,
             params={"format": "json", "per_page": 10},
-            timeout=self.settings.world_bank_timeout_sec,
+            timeout=timeout,
         )
         response.raise_for_status()
         payload = response.json()
         if not isinstance(payload, list) or len(payload) < 2:
-            return []
+            return tuple()
         data = payload[1]
         if not isinstance(data, list):
-            return []
-        return data
+            return tuple()
+        return tuple(data)
+
+    def _fetch_world_bank_series(
+        self, country: str, indicator: str
+    ) -> list[dict[str, Any]]:
+        # For backwards compatibility if called elsewhere
+        return list(self._do_fetch_world_bank_series(country, indicator, self.settings.world_bank_base_url, self.settings.world_bank_timeout_sec))
 
     @staticmethod
     def _apply_multiplier(
