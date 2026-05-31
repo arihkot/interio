@@ -20,7 +20,7 @@ To revolutionize the architectural and construction planning process by providin
 - **Web3 Bonus:** Mint 3D models + cost metrics as an NFT strictly on Stellar (Soroban contracts included)
 
 ## Demo Video
-https://drive.google.com/file/d/1q6ymjfGxYkm3AkBGouhpVZocU9KEVkev/view?usp=drive_link
+https://drive.google.com/file/d/1IYiKuFco0i5ERtL1jV3TFEbBo7w8zeJ6/view?usp=sharing
 
 ## Deployed Website URL
 https://interio-eight.vercel.app/
