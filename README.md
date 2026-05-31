@@ -19,7 +19,7 @@ To revolutionize the architectural and construction planning process by providin
 - Manual fallback processing endpoint
 - **Web3 Bonus:** Mint 3D models + cost metrics as an NFT strictly on Stellar (Soroban contracts included)
 
-## Demo
+## Demo Video
 https://drive.google.com/file/d/1q6ymjfGxYkm3AkBGouhpVZocU9KEVkev/view?usp=drive_link
 
 ## Deployed Website URL
