@@ -43,9 +43,9 @@ export function WalletConnect() {
 
   if (pubKey) {
     return (
-      <div className="status-badge" style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "var(--surface-alt)", color: "var(--text)", padding: "0.5rem 1rem", borderRadius: "99px", fontSize: "0.85rem", fontWeight: 500 }}>
-        <span className="dot" style={{ background: "var(--success)" }}></span> 
-        {pubKey.substring(0, 4)}...{pubKey.substring(pubKey.length - 4)}
+      <div className="status-badge wallet-connected" style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "var(--surface-alt)", color: "var(--text)", padding: "0.5rem 1rem", borderRadius: "99px", fontSize: "0.85rem", fontWeight: 500 }}>
+        <span className="dot" style={{ background: "var(--success)" }}></span>
+        <span className="wallet-name">{pubKey.substring(0, 4)}...{pubKey.substring(pubKey.length - 4)}</span>
       </div>
     );
   }
@@ -54,11 +54,12 @@ export function WalletConnect() {
     <button 
       onClick={connect} 
       disabled={connecting}
-      className="btn btn-outline"
-      style={{ display: "flex", alignItems: "center", gap: "0.5rem", width: "100%", justifyContent: "center" }}
+      className="btn btn-outline wallet-connect-btn"
+      title="Connect Freighter Wallet"
+      style={{ display: "flex", alignItems: "center", gap: "0.5rem", width: "100%", justifyContent: "center", whiteSpace: "nowrap" }}
     >
-      <Wallet size={16} />
-      {connecting ? "Connecting..." : "Connect Freighter"}
+      <Wallet size={16} className="wallet-icon" />
+      <span className="wallet-label">{connecting ? "Connecting..." : "Connect Freighter"}</span>
     </button>
   );
 }

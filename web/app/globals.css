@@ -627,6 +627,20 @@ td { color: var(--text); }
 }
 .export-row a:hover { background: var(--surface-alt); text-decoration: none; }
 
+/* Components overrides for mobile */
+@media (max-width: 768px) {
+  .chat-panel { padding: 1rem !important; }
+  .chat-log { min-height: 300px !important; }
+  .plan-2d-toggle-btn { font-size: 0.75rem !important; padding: 0.35rem 0.75rem !important; }
+}
+
+/* Chat input form mobile responsive */
+@media (max-width: 480px) {
+  .chat-log { min-height: 240px !important; }
+  .msg { max-width: 98% !important; }
+  .msg p { font-size: 0.9rem !important; }
+}
+
 /* Component Overrides from previous classes */
 .map-wrap {
   margin-top: 1.25rem;
@@ -677,37 +691,323 @@ td { color: var(--text); }
   box-shadow: var(--shadow-sm);
 }
 
+/* 3D Model Page overlay */
+.model-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 2.5rem;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+.model-overlay-title { pointer-events: auto; }
+.model-overlay-controls { pointer-events: auto; }
+
+@media (max-width: 768px) {
+  .model-overlay {
+    flex-direction: column;
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+  .model-overlay .page-title { font-size: 1.5rem !important; }
+  .model-overlay .page-subtitle { font-size: 0.9rem !important; }
+  .model-overlay-controls {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .model-overlay {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  .model-overlay .page-title { font-size: 1.15rem !important; }
+  .model-overlay .page-subtitle { font-size: 0.8rem !important; }
+}
+
+/* 2D Plan Page overlay */
+.plan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 2.5rem;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.plan-2d-overlay-top {
+  position: absolute;
+  top: 2.5rem;
+  right: 2.5rem;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.plan-2d-stats {
+  position: absolute;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  pointer-events: auto;
+  display: flex;
+  gap: 1.25rem;
+  background: var(--surface);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .plan-overlay { padding: 1.25rem; }
+  .plan-2d-overlay-top { top: 1.25rem; right: 1.25rem; }
+  .plan-2d-stats {
+    bottom: 1.25rem;
+    right: 50%;
+    transform: translateX(50%);
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .plan-overlay { padding: 0.75rem; }
+  .plan-overlay .page-title { font-size: 1.15rem !important; }
+  .plan-overlay .page-subtitle { font-size: 0.8rem !important; }
+  .plan-2d-overlay-top { top: 0.75rem; right: 0.75rem; }
+  .plan-2d-stats { bottom: 0.75rem; gap: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+  .plan-2d-toggle-btn { font-size: 0.75rem !important; padding: 0.35rem 0.75rem !important; }
+}
+
+/* Vercel demo banner responsive */
+@media (max-width: 768px) {
+  body > div:only-child > [style*="background: #fffbeb"] {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 0.75rem !important;
+    line-height: 1.4;
+  }
+}
+
 /* Mobile responsive */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
+  .recs-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
   .layout-container {
     flex-direction: column;
   }
   .sidebar {
     width: 100%;
-    padding: 1rem 1.5rem;
+    padding: 1rem;
     border-right: none;
     border-bottom: 1px solid var(--border);
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.75rem;
+    height: auto;
+    min-height: 60px;
   }
-  .sidebar-header { margin: 0; }
+  .sidebar-header {
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .sidebar-header h2 { font-size: 1.1rem; }
   .sidebar-nav {
     flex-direction: row;
     overflow-x: auto;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sidebar-nav::-webkit-scrollbar { display: none; }
+  .nav-link {
+    padding: 0.5rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .nav-link span { display: none; }
-  .nav-link { padding: 0.75rem; }
-  .sidebar-footer { display: none; }
-  
-  .content-container {
-    padding: 1.5rem;
+  .sidebar-footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    border-top: none;
+    flex-shrink: 0;
   }
-  
-  .viewer-grid, .recs-layout {
+  .sidebar-footer .status-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
+  .sidebar-footer .status-badge span { display: inline; }
+
+  .content-container {
+    padding: 1.25rem;
+  }
+
+  /* Hide sidebar footer content that doesn't fit, move WalletConnect to a collapsible */
+  .sidebar-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+  .sidebar-footer-mobile-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+
+  .sidebar-header .title-and-mobile-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .page-title { font-size: 1.5rem; }
+  .page-subtitle { font-size: 0.9rem; }
+
+  .panel { padding: 1.25rem; }
+
+  .uploader-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .upload-drop { padding: 1.25rem; }
+
+  .location-grid, .controls-grid {
     grid-template-columns: 1fr;
   }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .summary-grid article { padding: 0.875rem; }
+  .summary-grid p { font-size: 1.1rem; }
+  .summary-text-grid { grid-template-columns: 1fr; }
+
+  .success-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .row-action {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .viewer-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .rec-main-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .score-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .inspector-grid { grid-template-columns: 1fr; }
+
+  .export-row { flex-direction: column; }
+  .export-row a, .export-row button { width: 100%; justify-content: center; }
+
+  .viewer-container svg, .viewer-3d .canvas-wrap, .viewer-panel svg {
+    height: 350px;
+  }
+
+  .chat-log { height: 350px; }
+  .msg { max-width: 95%; }
+
+  .pricing-table-wrap table { min-width: 480px; }
+
+  /* WalletConnect compact on mobile */
+  .wallet-connect-btn {
+    padding: 0.5rem !important;
+    width: auto !important;
+    min-width: 36px;
+  }
+  .wallet-connect-btn .wallet-label { display: none; }
+  .wallet-connect-btn .wallet-icon { margin: 0; }
+  .wallet-connected .wallet-name { font-size: 0.75rem; }
+
+  /* Wallets and statuses in mobile sidebar footer */
+  .sidebar-footer > * {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  .sidebar-header h2 { font-size: 1rem; }
+  .nav-link { padding: 0.4rem; }
+  .sidebar-footer > * { max-width: 120px; }
+  .sidebar-footer .status-badge { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
+
+  .content-container { padding: 1rem; }
+
+  .panel { padding: 1rem; }
+
+  .page-title { font-size: 1.25rem; }
+  .page-subtitle { font-size: 0.85rem; }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .summary-grid article { padding: 0.75rem; }
+  .summary-grid p { font-size: 1rem; }
+
+  .viewer-container svg, .viewer-3d .canvas-wrap, .viewer-panel svg {
+    height: 280px;
+  }
+
+  .chat-log { height: 280px; }
+
+  .pricing-table-wrap table { min-width: 380px; }
 }
 
 @keyframes spin {

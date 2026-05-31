@@ -21,7 +21,7 @@ export default function PlanPage() {
         />
       </div>
 
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "2.5rem", pointerEvents: "none", zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="plan-overlay">
         <div style={{ pointerEvents: "auto" }}>
           <h1 className="page-title" style={{ fontSize: "2rem", margin: 0, color: "var(--text)", textShadow: "0 2px 10px rgba(255,255,255,0.8)" }}>2D Detection Plan</h1>
           <p className="page-subtitle" style={{ fontSize: "1.05rem", marginTop: "0.25rem", display: "block" }}>Inspect the 2D layout and detected elements</p>

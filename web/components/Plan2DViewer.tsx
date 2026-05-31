@@ -136,17 +136,10 @@ export function Plan2DViewer({ plan, selectedElementId, onSelectElement, file }:
         </g>
       </svg>
       
-      <div 
-        style={{ 
-          position: "absolute", 
-          top: "2.5rem", 
-          right: "2.5rem", 
-          pointerEvents: "auto", 
-          zIndex: 10
-        }}
-      >
+      <div className="plan-2d-overlay-top">
         <button
           onClick={() => setShowOverlay(!showOverlay)}
+          className="plan-2d-toggle-btn"
           style={{
             padding: "0.5rem 1rem",
             background: showOverlay ? "var(--brand)" : "var(--surface)",
@@ -156,32 +149,16 @@ export function Plan2DViewer({ plan, selectedElementId, onSelectElement, file }:
             cursor: "pointer",
             fontWeight: 500,
             boxShadow: "var(--shadow-sm)",
-            transition: "all 0.2s"
+            transition: "all 0.2s",
+            fontSize: "0.85rem"
           }}
         >
           {showOverlay ? "Hide Original Floorplan" : "Show Original Floorplan"}
         </button>
       </div>
 
-      <div 
-        style={{ 
-          position: "absolute", 
-          bottom: "2.5rem", 
-          right: "2.5rem", 
-          pointerEvents: "auto", 
-          display: "flex", 
-          gap: "1.25rem", 
-          background: "var(--surface)", 
-          padding: "1rem 1.5rem", 
-          borderRadius: "var(--radius)", 
-          boxShadow: "var(--shadow-sm)", 
-          color: "var(--text-muted)", 
-          fontSize: "0.9rem", 
-          border: "1px solid var(--border)",
-          zIndex: 10
-        }}
-      >
-        <span><strong style={{ color: "var(--text)", fontWeight: 600 }}>Parsing confidence:</strong> {(plan.parsing_confidence * 100).toFixed(0)}%</span>
+      <div className="plan-2d-stats">
+        <span><strong style={{ color: "var(--text)", fontWeight: 600 }}>Parsing:</strong> {(plan.parsing_confidence * 100).toFixed(0)}%</span>
         <span><strong style={{ color: "var(--text)", fontWeight: 600 }}>Walls:</strong> {plan.walls.length}</span>
         <span><strong style={{ color: "var(--text)", fontWeight: 600 }}>Rooms:</strong> {plan.rooms.length}</span>
         <span><strong style={{ color: "var(--text)", fontWeight: 600 }}>Openings:</strong> {plan.openings.length}</span>

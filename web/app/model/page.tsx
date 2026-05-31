@@ -69,12 +69,12 @@ export default function ModelPage() {
         )}
       </div>
 
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "2.5rem", pointerEvents: "none", zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div style={{ pointerEvents: "auto" }}>
+      <div className="model-overlay">
+        <div className="model-overlay-title" style={{ pointerEvents: "auto" }}>
           <h1 className="page-title" style={{ fontSize: "2rem", margin: 0, color: "var(--text)", textShadow: "0 2px 10px rgba(255,255,255,0.8)" }}>3D Model Render</h1>
-          <p className="page-subtitle" style={{ fontSize: "1.05rem", marginTop: "0.25rem" }}>Interactive 3D visualization of the structure</p>
+          <p className="page-subtitle" style={{ fontSize: "1.05rem", marginTop: "0.25rem", display: "block" }}>Interactive 3D visualization of the structure</p>
         </div>
-        <div style={{ pointerEvents: "auto", minWidth: "300px" }}>
+        <div className="model-overlay-controls" style={{ pointerEvents: "auto" }}>
           <ModelControls 
             variant={variant} 
             detail={detail} 
