@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Point2D(BaseModel):
@@ -220,6 +220,8 @@ class ExplainabilityReport(BaseModel):
 
 
 class ProcessedProject(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     project_id: str
     created_at: datetime
     location: LocationContext

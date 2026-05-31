@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -264,19 +264,22 @@ def export_model(project_id: str, variant: str, detail: str) -> FileResponse:
 
 
 @app.post("/api/web3/mint/{project_id}")
-def mint_project_nft(project_id: str) -> dict:
+async def mint_project_nft(project_id: str, request: Request) -> dict:
     from app.services.stellar_service import mint_stellar_nft
 
     project = project_store.get(project_id)
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    cost = project.cost_summary
-    total_cost = str(cost.primary_total_cost_inr)
-    maintenance = str(cost.annual_maintenance_inr)
-    model_url = (
-        f"http://localhost:8000/api/export/model-obj/{project_id}/primary/simple"
-    )
+    payload = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    
+    # Use real project data if available (local), fallback to payload if mock (vercel)
+    if project:
+        cost = project.cost_summary
+        total_cost = str(cost.primary_total_cost_inr)
+        maintenance = str(cost.annual_maintenance_inr)
+        model_url = f"{request.base_url}api/export/model-obj/{project_id}/primary/simple"
+    else:
+        total_cost = payload.get("total_cost", "0")
+        maintenance = payload.get("maintenance", "0")
+        model_url = payload.get("model_url", "")
 
     return mint_stellar_nft(project_id, total_cost, maintenance, model_url)
 

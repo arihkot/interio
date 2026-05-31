@@ -5,6 +5,7 @@ import { modelExportUrl, pdfExportUrl } from "@/lib/api";
 import { formatINR } from "@/lib/format";
 import { ProcessedProject } from "@/lib/types";
 import { FileText, Box, Download, Coins, ExternalLink, Loader2 } from "lucide-react";
+import { getPublicKey, mintNftClient } from "@/lib/stellar";
 
 type Props = {
   project: ProcessedProject;
@@ -19,11 +20,41 @@ export function ProjectSummary({ project }: Props) {
   const handleMintNFT = async () => {
     try {
       setIsMinting(true);
-      setMintStatus("Funding account & minting on Stellar Testnet...");
+      setMintStatus("Connecting to Freighter wallet...");
       setMintUrl(null);
       
-      const res = await fetch(`http://localhost:8000/api/web3/mint/${project.project_id}`, {
-        method: 'POST'
+      const pubKey = await getPublicKey();
+      if (pubKey) {
+        setMintStatus("Signing transaction with Freighter...");
+        const result = await mintNftClient({
+          totalCost: String(cost.primary_total_cost_inr),
+          maintenance: String(cost.annual_maintenance_inr),
+          modelUrl: modelExportUrl(project.project_id, "primary", "simple"),
+          name: `Interio_${project.project_id.substring(0, 6)}`,
+        });
+        
+        if (result.status === "success" && result.explorer_url) {
+          setMintStatus("Success! NFT minted via Freighter on Stellar Testnet.");
+          setMintUrl(result.explorer_url);
+        } else {
+          setMintStatus(`Minting failed: ${result.message}`);
+        }
+        return;
+      }
+
+      setMintStatus("Freighter not detected, trying backend minting...");
+      const payload = {
+        total_cost: String(cost.primary_total_cost_inr),
+        maintenance: String(cost.annual_maintenance_inr),
+        model_url: modelExportUrl(project.project_id, "primary", "simple")
+      };
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000"}/api/web3/mint/${project.project_id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
       });
       
       const data = await res.json();

@@ -11,6 +11,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useProject } from "./ProjectContext";
+import { WalletConnect } from "@/components/WalletConnect";
 
 export function Navigation() {
   const pathname = usePathname();
@@ -54,13 +55,14 @@ export function Navigation() {
         })}
       </nav>
 
-      {project && (
-        <div className="sidebar-footer">
+      <div className="sidebar-footer" style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "auto" }}>
+        <WalletConnect />
+        {project && (
           <div className="status-badge">
             <span className="dot"></span> Project Loaded
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </aside>
   );
 }
