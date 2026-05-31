@@ -105,8 +105,10 @@ export function ChatPanel({ projectId }: Props) {
       
       recognition.onresult = (event) => {
         let currentTranscript = "";
-        for (let i = 0; i < (event.results as any).length; i++) {
-          currentTranscript += (event.results as any)[i][0].transcript;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const results = event.results as any;
+        for (let i = 0; i < results.length; i++) {
+          currentTranscript += results[i][0].transcript;
         }
         setInput(currentTranscript);
       };

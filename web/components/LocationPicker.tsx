@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Loader2, MapPin } from "lucide-react";
 
 type Props = {
   onConfirm: (value: {
@@ -181,7 +182,15 @@ export function LocationPicker({ onConfirm }: Props) {
 
       <div className="row-action">
         <div className="location-help">
-          <span>{detecting ? "Detecting current location..." : "Nearest supported city selected from your current location."}</span>
+          {detecting ? (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Loader2 size={14} className="animate-spin" /> Detecting current location...
+            </span>
+          ) : (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <MapPin size={14} /> Nearest supported city selected.
+            </span>
+          )}
           <span>Selected: {city}, {state}</span>
         </div>
         <button

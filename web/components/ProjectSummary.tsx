@@ -4,7 +4,7 @@ import { useState } from "react";
 import { modelExportUrl, pdfExportUrl } from "@/lib/api";
 import { formatINR } from "@/lib/format";
 import { ProcessedProject } from "@/lib/types";
-import { FileText, Box, Download, Coins, ExternalLink } from "lucide-react";
+import { FileText, Box, Download, Coins, ExternalLink, Loader2 } from "lucide-react";
 
 type Props = {
   project: ProcessedProject;
@@ -118,7 +118,15 @@ export function ProjectSummary({ project }: Props) {
           className="btn btn-outline"
           style={{ background: "#000", color: "#fff", borderColor: "#fff", display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
-          <Coins size={16} /> {isMinting ? "Minting..." : "Mint as Stellar NFT"}
+          {isMinting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" /> Minting...
+            </>
+          ) : (
+            <>
+              <Coins size={16} /> Mint as Stellar NFT
+            </>
+          )}
         </button>
       </div>
       {mintStatus && (

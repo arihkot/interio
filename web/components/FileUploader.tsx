@@ -1,5 +1,7 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
+
 type Props = {
   disabled: boolean;
   onFileChange: (file: File | null) => void;
@@ -37,8 +39,16 @@ export function FileUploader({
           type="button"
           disabled={disabled || !file || isProcessing}
           onClick={onProcess}
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}
         >
-          {isProcessing ? "Processing..." : "Run End-to-End Pipeline"}
+          {isProcessing ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Processing...
+            </>
+          ) : (
+            "Run End-to-End Pipeline"
+          )}
         </button>
       </div>
     </section>

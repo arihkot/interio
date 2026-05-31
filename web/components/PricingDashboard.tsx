@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 import { getPricing } from "@/lib/api";
 import { formatINR } from "@/lib/format";
@@ -42,7 +43,12 @@ export function PricingDashboard({ projectId }: Props) {
     };
   }, [projectId]);
 
-  if (loading) return <section className="panel">Loading pricing dashboard...</section>;
+  if (loading) return (
+    <section className="panel" style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "3rem" }}>
+      <Loader2 size={24} className="animate-spin" style={{ marginRight: "0.75rem", color: "var(--brand)" }} />
+      <span>Loading pricing dashboard...</span>
+    </section>
+  );
   if (error || !data) return <section className="panel">{error ?? "No pricing data found"}</section>;
 
   return (

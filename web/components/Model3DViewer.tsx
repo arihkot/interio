@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, Suspense } from "react";
 import { Canvas, useLoader } from "@react-three/fiber";
-import { OrbitControls, Grid, Environment, ContactShadows, Center } from "@react-three/drei";
+import { OrbitControls, Grid, Environment, Center, Loader } from "@react-three/drei";
 import { Color, TextureLoader } from "three";
 
 import { Model3D, FloorPlan2D } from "@/lib/types";
@@ -275,6 +275,7 @@ export function Model3DViewer({
           maxDistance={50} 
         />
       </Canvas>
+      <Loader />
     </div>
   );
 }
