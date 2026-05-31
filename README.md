@@ -42,6 +42,8 @@ https://interio-eight.vercel.app/
 <img width="340" height="730" alt="image" src="https://github.com/user-attachments/assets/996c1f39-4b3e-478a-84c3-00d8ab0e3c21" />
 <img width="342" height="733" alt="image" src="https://github.com/user-attachments/assets/9b20e91d-2665-4090-8225-6ab68cc17000" />
 
+## CI/CD
+<img width="1125" height="714" alt="image" src="https://github.com/user-attachments/assets/7f28d993-88b5-4710-8435-c12aa9065e72" />
 
 
 ## Project Setup Guide
